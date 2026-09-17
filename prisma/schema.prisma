@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String            @id @default(uuid())
+  username      String?
+  email         String
+  password      String
+  bills         Bill[]
+  contacts      Contact[] 
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Bill {
+  id           String            @id @default(uuid())
+  title        String
+  currency     String            @default("IDR") 
+  items        BillItem[]
+  participants BillParticipant[]
+  grossAmount  Int?
+  tax          Int?
+  owner        User              @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  shareToken   String?            @unique
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+
+model BillItem {
+  id String @id @default(uuid())
+  name String
+  qty Int
+  unitPrice Int
+  subTotal Int
+  bill Bill @relation(fields: [billId], references: [id], onDelete: Cascade)
+  billId String 
+  participant BillParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  id           String            @id @default(uuid())
+  name         String
+  whatsapp     String? 
+  owner        User              @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  participations BillParticipant[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([ownerId, name])
+}
+
+model BillParticipant {
+  id          String     @id @default(uuid())
+  shareAmount Int
+  paidAt      DateTime?
+  claimedAt   DateTime?
+  bill        Bill       @relation(fields: [billId], references: [id], onDelete: Cascade)
+  billId      String
+  contact     Contact    @relation(fields: [contactId], references: [id]) // <- ganti dari `name` manual
+  contactId   String
+  items       BillItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([billId, contactId])
+}

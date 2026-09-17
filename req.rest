@@ -1,0 +1,28 @@
+GET http://localhost:3000/bill
+
+###
+POST http://localhost:3000/bill
+Content-Type: application/json
+
+{
+    "title": "Patungan Bayar Makan"
+}
+
+###
+DELETE http://localhost:3000/bill/3e1442b1-1d1b-42b0-8a58-9c416377658b
+
+###
+DELETE http://localhost:3000/user/all
+
+###
+POST http://localhost:3000/user/
+Content-Type: application/json
+
+{
+    "username": "cihuy",
+    "email": "cihuy@gmail.com",
+    "password": "101010"
+}
+
+###
+GET http://localhost:3000/user
