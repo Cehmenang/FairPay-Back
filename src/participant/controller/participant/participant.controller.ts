@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { PaymentMethod } from '@prisma/client';
 import { ParticipantService } from 'src/participant/service/participant/participant.service';
 import { JwtGuard } from 'src/user/guard/jwt.guard';
 
@@ -18,9 +19,9 @@ export class ParticipantController {
         return this.service.createContact(body, user.id)
     }
 
-    @Get(':id/claim/:url')
-    payBillClaim(@Param('url') url: string, @Param('id') id: string){
-        return this.service.payBillClaim(url, id)
+    @Patch(':id/claim/:url')
+    payBillClaim(@Param('url') url: string, @Param('id') id: string, @Body() body: { paymentMethod: PaymentMethod }){
+        return this.service.payBillClaim(url, id, body.paymentMethod)
     }
 
     @UseGuards(JwtGuard)

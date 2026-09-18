@@ -13,6 +13,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PaymentMethod {
+    TRANSFER_BANK
+    QRIS
+    E_WALLET
+}
+
 model User {
   id            String            @id @default(uuid())
   username      String?
@@ -72,6 +78,7 @@ model BillParticipant {
   shareAmount Int
   paidAt      DateTime?
   claimedAt   DateTime?
+  paymentMethod PaymentMethod?
   bill        Bill       @relation(fields: [billId], references: [id], onDelete: Cascade)
   billId      String
   contact     Contact    @relation(fields: [contactId], references: [id]) // <- ganti dari `name` manual

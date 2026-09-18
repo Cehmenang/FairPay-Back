@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { PaymentMethod } from '@prisma/client';
 import { MailService } from 'src/mail/service/mail/mail.service';
 import { PrismaService } from 'src/prisma/service/prisma/prisma.service';
 
@@ -17,10 +18,10 @@ export class ParticipantService {
         } })
     }
 
-    async payBillClaim(url: string, id: string){
+    async payBillClaim(url: string, id: string, paymentMethod: PaymentMethod){
         const result = await this.prisma.billParticipant.update({ 
             where: { id, bill: { shareToken: url } },
-            data: { claimedAt: new Date() }
+            data: { claimedAt: new Date(), paymentMethod }
         })
         if (!result) {
             throw new NotFoundException('Peserta tidak ditemukan untuk tagihan ini');
