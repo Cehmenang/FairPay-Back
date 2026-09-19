@@ -10,7 +10,7 @@ export class UserService {
 
     generateAccessToken(token: string, response: Response){
         return response.cookie('accessToken', token, {
-            maxAge: 1000 * 60 * 60, httpOnly: true, secure: true, sameSite: 'none'
+            maxAge: 1000 * 60 * 60, httpOnly: true, secure: true, sameSite: 'none' as const
         })
     }
 
