@@ -4,6 +4,23 @@ import { PrismaService } from 'src/prisma/service/prisma/prisma.service';
 
 @Injectable()
 export class BillService {
+    private readonly groqUrl = process.env.GROQ_URL as string
+    private readonly groqApi = process.env.GROQ_API as string
+    private readonly MAX_RETRIES = 2;
+    private readonly SYSTEM_PROMPT = `OCR struk belanja. Balas HANYA JSON murni (tanpa markdown, tanpa penjelasan):
+{"isReceipt":bool,"title":string|null,"currency":string|null,"items":[{"name":string,"qty":number,"unitPrice":number,"subTotal":number}],"grossAmount":number|null,"tax":number|null,"note":string|null}
+
+Angka murni, tanpa simbol/titik ribuan.
+
+Aturan:
+- Bukan struk (orang/dokumen lain) -> isReceipt=false, field lain null/[], note=alasan singkat.
+- title=nama toko. currency=ISO 4217 dari petunjuk di struk (bahasa/simbol/format/nama toko), default "IDR" jika tak ada petunjuk.
+- items: gabung baris duplikat (jumlah qty). unitPrice=harga satuan (hitung mundur dari subtotal/qty jika perlu). subTotal=qty*unitPrice. Skip baris subtotal/pajak/diskon/service charge.
+- grossAmount=total sebelum pajak (baris Subtotal, atau jumlah subTotal item).
+- tax=nominal pajak/PPN/VAT, null jika tak ada.
+- note=null jika jelas; isi singkat jika ada bagian buram/tebakan. Jangan skip item karena buram — tebak.
+- Jangan mengarang item. Selalu keluarkan JSON lengkap walau harus menebak.`
+
     constructor(private readonly prisma: PrismaService){}
 
    slugify(text: string) {
@@ -30,6 +47,54 @@ export class BillService {
     async getBillClaim(url: string){
         return await this.prisma.bill.findFirst({ where: { shareToken: url },
         include: { participants: { include: { items: true, contact: true } }, owner: true } })
+    }
+
+    async callGroq(dataUrl: string){
+
+	for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
+		const groqRes = await fetch(this.groqUrl, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${this.groqApi}}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				model: 'qwen/qwen3.8-27b',
+				temperature: 0,
+				max_tokens: 700,
+				reasoning_effort: 'none',
+				reasoning_format: 'hidden',
+				response_format: { type: 'json_object' },
+				messages: [
+					{ role: 'system', content: this.SYSTEM_PROMPT },
+					{
+						role: 'user',
+						content: [
+							{ type: 'text', text: 'Ini fotonya.' },
+							{ type: 'image_url', image_url: { url: dataUrl } }
+						]
+					}
+				]
+			})
+		});
+
+		if (groqRes.ok) {
+			try {
+                console.log(await groqRes.json(), 'TEST!')
+				return { data : await groqRes.json()}
+			} catch {
+				console.warn(`Attempt ${attempt + 1}: hasil bukan JSON valid`)
+				continue
+			}
+		}
+	}
+
+	
+    }
+
+    async scanBill(file: Express.Multer.File){
+        const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        const ocr = await this.callGroq(dataUrl)
     }
 
     async createBill(body: CreateBillDto, id: string){
