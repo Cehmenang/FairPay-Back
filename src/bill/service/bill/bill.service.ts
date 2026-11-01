@@ -80,7 +80,6 @@ Aturan:
 
 		if (groqRes.ok) {
 			try {
-                console.log(await groqRes.json(), 'TEST!')
 				return { data : await groqRes.json()}
 			} catch {
 				console.warn(`Attempt ${attempt + 1}: hasil bukan JSON valid`)
@@ -95,6 +94,8 @@ Aturan:
     async scanBill(file: Express.Multer.File){
         const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
         const ocr = await this.callGroq(dataUrl)
+        console.log(ocr, 'ocr cuy!')
+        return true
     }
 
     async createBill(body: CreateBillDto, id: string){

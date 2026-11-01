@@ -28,7 +28,6 @@ export class BillController {
     )
     @Post('scan')
     scanBill(@UploadedFile() file: Express.Multer.File){
-        console.log(file, 'filejing')
         if(!file) throw new BadRequestException("Gambar wajib dikirim!")
         return this.billService.scanBill(file)
     }
