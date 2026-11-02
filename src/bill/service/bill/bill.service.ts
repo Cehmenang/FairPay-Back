@@ -50,6 +50,9 @@ Aturan:
     }
 
     async callGroq(dataUrl: string){
+    console.log(dataUrl, 'dataUrl')
+    console.log(this.SYSTEM_PROMPT, 'prompt')
+    console.log(this.groqUrl, 'masok')
 
 	for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
 		const groqRes = await fetch(this.groqUrl, {
@@ -77,6 +80,8 @@ Aturan:
 				]
 			})
 		});
+
+        console.log(await groqRes.json(), 'hawo')
 
 		if (groqRes.ok) {
 			try {
