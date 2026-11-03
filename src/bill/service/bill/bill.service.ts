@@ -56,7 +56,7 @@ Aturan:
 		const groqRes = await fetch(this.groqUrl, {
 			method: 'POST',
 			headers: {
-				Authorization: `Bearer ${this.groqApi}}`,
+				Authorization: `Bearer ${this.groqApi}`,
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
