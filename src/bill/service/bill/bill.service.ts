@@ -50,8 +50,7 @@ Aturan:
     }
 
     async callGroq(dataUrl: string){
-    console.log(this.groqApi, 'apinya')
-
+        
 	for (let attempt = 0; attempt <= this.MAX_RETRIES; attempt++) {
 		const groqRes = await fetch(this.groqUrl, {
 			method: 'POST',
@@ -94,8 +93,9 @@ Aturan:
 
     async scanBill(file: Express.Multer.File){
         const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-        const ocr = await this.callGroq(dataUrl)
-        console.log(ocr, 'ocr cuy!')
+        const ocr = await this.callGroq(dataUrl) as any
+        if(!ocr || !ocr.isReceipt) throw new BadRequestException('OCR Bukan Sebuah Struk!')
+        console.log(ocr.data, 'DATANYA')
         return true
     }
 
