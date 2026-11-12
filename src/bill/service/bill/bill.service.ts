@@ -94,11 +94,9 @@ Aturan:
     async scanBill(file: Express.Multer.File){
         const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
         const ocr = await this.callGroq(dataUrl) as any
-        // if(!ocr || !ocr.data.isReceipt) throw new BadRequestException('OCR Bukan Sebuah Struk!')
         const result = JSON.parse(ocr.data.choices[0].message.content) as any
-        ocr.data.choices.forEach(c=>console.log(c.message.content, 'CONTENT'))
-        console.log(result.isReceipt, 'ADAGA')
-        return true
+        if(!ocr || !result || result.isReceipt !== true) throw new BadRequestException('OCR Bukan Sebuah Struk!')
+        return result
     }
 
     async createBill(body: CreateBillDto, id: string){
