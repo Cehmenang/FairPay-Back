@@ -96,6 +96,7 @@ Aturan:
         const ocr = await this.callGroq(dataUrl) as any
         // if(!ocr || !ocr.data.isReceipt) throw new BadRequestException('OCR Bukan Sebuah Struk!')
         const result = JSON.parse(ocr.data.choices[0].message.content) as any
+        ocr.data.choices.foreach(c=>console.log(c.message.content, 'CONTENT'))
         console.log(result.isReceipt, 'ADAGA')
         return true
     }
