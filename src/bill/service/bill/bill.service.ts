@@ -95,8 +95,8 @@ Aturan:
         const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
         const ocr = await this.callGroq(dataUrl) as any
         // if(!ocr || !ocr.data.isReceipt) throw new BadRequestException('OCR Bukan Sebuah Struk!')
-        const isRecept = ocr.data.choices[0].message.content as any
-        console.log(isRecept, 'ADAGA')
+        const result = JSON.parse(ocr.data.choices[0].message.content) as any
+        console.log(result.isReceipt, 'ADAGA')
         return true
     }
 
